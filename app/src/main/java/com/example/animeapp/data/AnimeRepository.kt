@@ -15,33 +15,25 @@ import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.IOException
 
-// Repositorio: única puerta de entrada a los datos.
-// Las pantallas (ViewModels) le piden datos y no saben si vienen
-// de Jikan, de los datos de prueba, de la memoria (caché) o de SQLite.
+// Repositorio: API, caché y favoritos en un solo lugar
 object AnimeRepository {
-
     private lateinit var db: FavoritesDbHelper
 
-    // Se llama una vez al iniciar la app (AnimeApplication)
+    // Abre la base y carga los ids de favoritos
     fun init(context: Context) {
         if (::db.isInitialized) return
         db = FavoritesDbHelper(context.applicationContext)
-        // Carga inicial de los ids de favoritos (en segundo plano)
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             _favoriteIds.value = db.getFavoriteIds()
         }
     }
 
-    // Ids de los favoritos: las tarjetas lo observan para pintar el corazón
     private val _favoriteIds = MutableStateFlow<Set<Int>>(emptySet())
     val favoriteIds: StateFlow<Set<Int>> = _favoriteIds
 
     private val api: JikanApi get() = RetrofitClient.api
 
-    // ---------- Límite de peticiones ----------
-    // Jikan permite ~3 peticiones por segundo. Se deja un mínimo de 400 ms
-    // entre llamadas y, si igual responde 429, se espera y se reintenta una vez.
-
+    // Límite de Jikan: 400 ms entre llamadas
     private val throttleMutex = Mutex()
     private var lastCallTime = 0L
     private const val MIN_INTERVAL_MS = 400L
@@ -54,6 +46,7 @@ object AnimeRepository {
         }
     }
 
+    // Si responde 429 espera y reintenta una vez
     private suspend fun <T> callApi(block: suspend () -> T): T {
         waitTurn()
         return try {
@@ -66,29 +59,24 @@ object AnimeRepository {
         }
     }
 
-    // ---------- Caché en memoria (dura mientras la app está abierta) ----------
-
+    // Caché en memoria
     private val topPages = mutableMapOf<Int, AnimeResponse>()
     private val genreCache = mutableMapOf<Int, List<Anime>>()
     private val episodesCache = mutableMapOf<Pair<Int, Int>, EpisodesResponse>()
 
-    // Todos los animes que la app ya conoce: sirve para la búsqueda difusa
     private val knownAnimes = linkedMapOf<Int, Anime>()
 
     private fun remember(animes: List<Anime>?) {
         animes.orEmpty().forEach { knownAnimes[it.id] = it }
     }
 
-    // Recomendación del día: se elige una vez por cada apertura de la app
     private var todayPick: Anime? = null
     private var todayPickReason = ""
 
-    // Cambia cada vez que se guarda o quita un favorito (el inicio lo usa para refrescarse)
     var favoritesVersion = 0
         private set
 
-    // ---------- Top ----------
-
+    // Top por página
     suspend fun getTopPage(page: Int): AnimeResponse {
         topPages[page]?.let { return it }
         val response = callApi { api.getTopAnime(page) }
@@ -99,8 +87,7 @@ object AnimeRepository {
 
     suspend fun getTop10(): List<Anime> = Ranking.sort(getTopPage(1).data.orEmpty()).take(10)
 
-    // ---------- Géneros ----------
-
+    // Mejores de un género
     suspend fun getBestByGenre(genreId: Int, limit: Int = 12): List<Anime> {
         genreCache[genreId]?.takeIf { it.size >= limit }?.let { return it.take(limit) }
         val response = callApi { api.getAnimeByGenre(genreId, limit) }
@@ -110,11 +97,7 @@ object AnimeRepository {
         return list
     }
 
-    // ---------- Búsqueda ----------
-
-    // Combina el resultado de Jikan con una búsqueda difusa sobre los animes
-    // que la app ya conoce (top, géneros, favoritos). Así "nrt" encuentra "Naruto"
-    // si Naruto ya pasó por la app, aunque Jikan no lo encuentre con ese texto.
+    // Buscador: Jikan + búsqueda difusa local
     suspend fun search(query: String): List<Anime> {
         val q = query.trim()
         if (q.isEmpty()) return emptyList()
@@ -124,7 +107,6 @@ object AnimeRepository {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            // Sin conexión: se sigue con lo que hay en memoria y en favoritos
             if (knownAnimes.isEmpty() && getFavorites().isEmpty()) throw e
             emptyList()
         }
@@ -132,13 +114,11 @@ object AnimeRepository {
 
         val candidates = (remote + knownAnimes.values + getFavorites()).distinctBy { it.id }
         val fuzzyMatches = FuzzySearch.filter(q, candidates) { it.allTitles() }
-        // Lo que devolvió Jikan pero no coincide "a la vista" (ej: por sinónimos) va al final
         val matchedIds = fuzzyMatches.map { it.id }.toSet()
         return fuzzyMatches + remote.filter { it.id !in matchedIds }
     }
 
-    // ---------- Episodios ----------
-
+    // Episodios con puntaje
     suspend fun getEpisodes(animeId: Int, page: Int): EpisodesResponse {
         episodesCache[animeId to page]?.let { return it }
         val response = callApi { api.getEpisodes(animeId, page) }
@@ -146,8 +126,7 @@ object AnimeRepository {
         return response
     }
 
-    // ---------- Favoritos (SQLite, en un hilo secundario) ----------
-
+    // Favoritos (SQLite en hilo IO)
     suspend fun getFavorites(genreId: Int? = null): List<Anime> =
         withContext(Dispatchers.IO) { db.getFavorites(genreId) }
 
@@ -166,12 +145,12 @@ object AnimeRepository {
         favoritesVersion++
     }
 
-    // Lo usa el corazón de las tarjetas: si está lo quita, si no lo agrega
+    // Corazón: agrega o quita
     suspend fun toggleFavorite(anime: Anime) {
         if (anime.id in _favoriteIds.value) removeFavorite(anime.id) else addFavorite(anime)
     }
 
-    // Los géneros que más aparecen en los favoritos (empate: alfabético)
+    // Géneros más repetidos en favoritos
     fun topGenres(favorites: List<Anime>, max: Int = 3): List<Genre> =
         favorites.flatMap { it.genres.orEmpty() }
             .groupBy { it.id }
@@ -180,21 +159,20 @@ object AnimeRepository {
             .take(max)
             .map { it.first }
 
-    // ---------- Inicio ----------
-
+    // Controlador de carruseles
     suspend fun loadHome(): HomeData {
         val top10 = getTop10()
         val favorites = getFavorites()
         val favoriteIds = favorites.map { it.id }.toSet()
 
-        // Hasta 3 carruseles con los géneros más repetidos en favoritos
+        // Llama a favoritos para obtener géneros, y ordena según ranking
         val sections = topGenres(favorites).mapNotNull { genre ->
             try {
                 GenreSection(genre, getBestByGenre(genre.id, 12))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                null // si falla un carrusel, se muestran los demás
+                null
             }
         }.filter { it.animes.isNotEmpty() }
 
@@ -204,8 +182,8 @@ object AnimeRepository {
         return HomeData(todayPick, todayPickReason, top10, sections)
     }
 
+    // Recomendación del día: de tus géneros o del top
     private fun chooseTodayPick(sections: List<GenreSection>, favoriteIds: Set<Int>) {
-        // 1) Si hay favoritos: un anime bien puntuado de sus géneros que todavía no guardó
         val fromGenres = sections.flatMap { section ->
             section.animes
                 .filter { it.id !in favoriteIds && (it.score ?: 0.0) >= 7.5 }
@@ -218,7 +196,6 @@ object AnimeRepository {
             return
         }
 
-        // 2) Si no: uno de los mejor puntuados
         val topCandidates = topPages[1]?.data.orEmpty()
             .filter { it.id !in favoriteIds && (it.score ?: 0.0) >= 8.0 }
         val any = topCandidates.ifEmpty { topPages[1]?.data.orEmpty() }
@@ -228,8 +205,7 @@ object AnimeRepository {
         }
     }
 
-    // ---------- Mensajes de error entendibles ----------
-
+    // Mensajes de error para el usuario
     fun describeError(e: Throwable): String = when (e) {
         is HttpException -> if (e.code() == 429) {
             "Jikan recibió demasiadas peticiones. Esperá unos segundos y reintentá."

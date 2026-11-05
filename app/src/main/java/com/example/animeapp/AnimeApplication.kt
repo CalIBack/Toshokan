@@ -3,7 +3,7 @@ package com.example.animeapp
 import android.app.Application
 import com.example.animeapp.data.AnimeRepository
 
-// Se crea antes que cualquier pantalla: prepara el repositorio (y SQLite)
+// Inicia el repositorio al abrir la app
 class AnimeApplication : Application() {
     override fun onCreate() {
         super.onCreate()

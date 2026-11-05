@@ -25,9 +25,8 @@ import com.example.animeapp.data.Anime
 import com.example.animeapp.data.AnimeRepository
 import kotlinx.coroutines.launch
 
-// Buscar: texto (búsqueda difusa) + filtro por género
+// Pantalla Buscar: texto + géneros
 class SearchFragment : Fragment(R.layout.fragment_search) {
-
     private val viewModel: SearchViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -46,7 +45,6 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         recycler.layoutManager = LinearLayoutManager(requireContext())
         recycler.adapter = adapter
 
-        // Chips de géneros (uno solo a la vez; tocar el elegido lo desmarca)
         Translations.browseGenres.forEach { genre ->
             val chip = layoutInflater.inflate(R.layout.item_chip_filter, chips, false) as Chip
             chip.id = View.generateViewId()
@@ -90,7 +88,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         }
     }
 
-    // Corazón de las tarjetas: guarda o quita sin abrir el detalle
+    // Corazón
     private fun toggleFavorite(anime: Anime) {
         viewLifecycleOwner.lifecycleScope.launch { AnimeRepository.toggleFavorite(anime) }
     }

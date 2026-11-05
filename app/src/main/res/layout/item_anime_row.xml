@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Fila de lista (Buscar, Top y Favoritos) -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -95,7 +94,6 @@
                 tools:text="★ 9.10" />
         </LinearLayout>
 
-        <!-- Corazón para guardar en favoritos sin abrir el detalle -->
         <ImageView
             android:id="@+id/imageRowHeart"
             android:layout_width="44dp"

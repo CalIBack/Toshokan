@@ -1,5 +1,4 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- La app usa siempre el tema oscuro (como la mayoría de las apps de anime/manga) -->
     <style name="Base.Theme.AnimeApp" parent="Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/accent</item>
         <item name="colorOnPrimary">@color/white</item>
@@ -23,7 +22,6 @@
 
     <style name="Theme.AnimeApp" parent="Base.Theme.AnimeApp" />
 
-    <!-- Títulos de sección con tipografía serif, estilo "editorial" -->
     <style name="TextAppearance.AnimeApp.Section" parent="TextAppearance.Material3.TitleLarge">
         <item name="android:fontFamily">serif</item>
         <item name="android:textStyle">bold</item>

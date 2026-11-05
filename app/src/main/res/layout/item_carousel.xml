@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tarjeta tipo póster de los carruseles -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -43,7 +42,6 @@
             android:visibility="gone"
             tools:text="#1" />
 
-        <!-- Corazón para guardar en favoritos sin abrir el detalle -->
         <ImageView
             android:id="@+id/imageHeart"
             android:layout_width="34dp"

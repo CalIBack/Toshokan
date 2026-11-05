@@ -25,12 +25,10 @@ import com.example.animeapp.data.Anime
 import com.example.animeapp.data.AnimeRepository
 import kotlinx.coroutines.launch
 
-// Favoritos guardados en SQLite: buscador propio + filtro por género. Funciona sin internet.
+// Pantalla Favoritos (SQLite, funciona offline)
 class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
-
     private val viewModel: FavoritesViewModel by viewModels()
 
-    // Géneros que tienen chip ahora mismo (para no recrearlos en cada cambio)
     private var shownGenres: List<Genre> = emptyList()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -56,7 +54,6 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    // Si se quita un favorito con el corazón, la lista se actualiza
                     AnimeRepository.favoriteIds.collect { ids ->
                         adapter.favoriteIds = ids
                         viewModel.refresh()
@@ -84,7 +81,7 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
         }
     }
 
-    // Se lee de nuevo al volver a la pantalla (por si se quitó un favorito en el detalle)
+    // Recarga al volver del detalle
     override fun onResume() {
         super.onResume()
         viewModel.refresh()
@@ -103,7 +100,7 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
         group.isVisible = genres.isNotEmpty()
     }
 
-    // Corazón de las tarjetas: guarda o quita sin abrir el detalle
+    // Corazón
     private fun toggleFavorite(anime: Anime) {
         viewLifecycleOwner.lifecycleScope.launch { AnimeRepository.toggleFavorite(anime) }
     }

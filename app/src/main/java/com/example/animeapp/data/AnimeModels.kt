@@ -3,8 +3,7 @@ package com.example.animeapp.data
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
-// ---------- Respuestas de la API ----------
-
+// Respuestas de Jikan
 data class AnimeResponse(
     @field:SerializedName("data") val data: List<Anime>?,
     @field:SerializedName("pagination") val pagination: Pagination? = null
@@ -20,10 +19,7 @@ data class Pagination(
     @field:SerializedName("last_visible_page") val lastVisiblePage: Int = 1
 )
 
-// ---------- Anime ----------
-
-// Serializable para poder mandarlo completo de una pantalla a otra (Bundle)
-// y para guardarlo en SQLite como JSON.
+// Anime (Serializable para pasarlo entre pantallas)
 data class Anime(
     @field:SerializedName("mal_id") val id: Int,
     @field:SerializedName("title") val title: String,
@@ -46,14 +42,10 @@ data class Anime(
     @field:SerializedName("genres") val genres: List<Genre>? = null,
     @field:SerializedName("studios") val studios: List<Studio>? = null
 ) : Serializable {
-
-    // Portada chica (filas de listas)
     fun coverUrl(): String? = images?.jpg?.imageUrl ?: images?.jpg?.largeImageUrl
 
-    // Portada grande (carruseles, podio, destacado y detalle)
     fun hdImageUrl(): String? = images?.jpg?.largeImageUrl ?: images?.jpg?.imageUrl
 
-    // Todos los títulos conocidos, para la búsqueda difusa
     fun allTitles(): List<String> = listOfNotNull(title, titleEnglish)
 
     fun hasGenre(genreId: Int): Boolean = genres.orEmpty().any { it.id == genreId }
@@ -77,18 +69,16 @@ data class Studio(
     @field:SerializedName("name") val name: String
 ) : Serializable
 
-// ---------- Episodios (/anime/{id}/episodes) ----------
-
 data class Episode(
     @field:SerializedName("mal_id") val number: Int,
     @field:SerializedName("title") val title: String?,
     @field:SerializedName("aired") val aired: String?,
-    @field:SerializedName("score") val score: Double?, // puntuación de los usuarios, de 1 a 5
+    @field:SerializedName("score") val score: Double?,
     @field:SerializedName("filler") val filler: Boolean = false,
     @field:SerializedName("recap") val recap: Boolean = false
 )
 
-// Secciones de la pantalla de inicio
+// Datos del inicio
 data class GenreSection(val genre: Genre, val animes: List<Anime>)
 
 data class HomeData(

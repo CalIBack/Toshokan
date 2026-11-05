@@ -15,13 +15,12 @@ import com.example.animeapp.data.Anime
 import com.example.animeapp.data.Translations
 import com.google.android.material.card.MaterialCardView
 
-// DiffUtil compara la lista vieja con la nueva y solo redibuja lo que cambió
 private val AnimeDiff = object : DiffUtil.ItemCallback<Anime>() {
     override fun areItemsTheSame(oldItem: Anime, newItem: Anime) = oldItem.id == newItem.id
     override fun areContentsTheSame(oldItem: Anime, newItem: Anime) = oldItem == newItem
 }
 
-// Pinta el corazón: lleno y rojo si es favorito, contorno blanco si no
+// Corazón lleno o vacío
 fun bindHeart(heart: ImageView, isFavorite: Boolean) {
     val context = heart.context
     heart.setImageResource(if (isFavorite) R.drawable.ic_favorite else R.drawable.ic_favorite_border)
@@ -31,15 +30,12 @@ fun bindHeart(heart: ImageView, isFavorite: Boolean) {
     heart.contentDescription = if (isFavorite) "Quitar de favoritos" else "Agregar a favoritos"
 }
 
-// ---------- Carrusel (tarjetas tipo póster) ----------
-
+// Carrusel del inicio
 class CarouselAdapter(
     private val showRank: Boolean,
     private val onClick: (Anime) -> Unit,
     private val onHeartClick: (Anime) -> Unit
 ) : ListAdapter<Anime, CarouselAdapter.Holder>(AnimeDiff) {
-
-    // Ids de favoritos; al cambiar se redibujan los corazones
     var favoriteIds: Set<Int> = emptySet()
         set(value) {
             if (field == value) return
@@ -72,8 +68,7 @@ class CarouselAdapter(
     }
 }
 
-// ---------- Fila de lista ----------
-
+// Fila de lista
 class AnimeRowHolder(view: View) : RecyclerView.ViewHolder(view) {
     private val rank: TextView = view.findViewById(R.id.textRowRank)
     private val cover: ImageView = view.findViewById(R.id.imageRowCover)
@@ -110,12 +105,11 @@ class AnimeRowHolder(view: View) : RecyclerView.ViewHolder(view) {
     }
 }
 
-// Lista simple (Buscar y Favoritos)
+// Lista de Buscar y Favoritos
 class AnimeRowAdapter(
     private val onClick: (Anime) -> Unit,
     private val onHeartClick: (Anime) -> Unit
 ) : ListAdapter<Anime, AnimeRowHolder>(AnimeDiff) {
-
     var favoriteIds: Set<Int> = emptySet()
         set(value) {
             if (field == value) return
@@ -131,15 +125,11 @@ class AnimeRowAdapter(
     }
 }
 
-// ---------- Top ratings: podio + ranking ----------
-// Dos tipos de vista: el encabezado con el podio (posiciones 1 a 3)
-// y las filas normales desde la posición 4.
-
+// Podio + ranking (dos tipos de vista)
 class TopAdapter(
     private val onClick: (Anime) -> Unit,
     private val onHeartClick: (Anime) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
     private var ranking: List<Anime> = emptyList()
 
     var favoriteIds: Set<Int> = emptySet()
@@ -149,8 +139,6 @@ class TopAdapter(
             notifyItemRangeChanged(0, itemCount)
         }
 
-    // Al cargar otra página el ranking se reordena completo (empates incluidos),
-    // por eso se redibuja toda la lista.
     fun submit(newRanking: List<Anime>) {
         ranking = newRanking
         notifyDataSetChanged()
@@ -175,7 +163,7 @@ class TopAdapter(
         if (holder is PodiumHolder) {
             holder.bind(ranking.take(3), onClick)
         } else if (holder is AnimeRowHolder) {
-            val index = if (hasPodium) position + 2 else position // fila 1 = puesto 4
+            val index = if (hasPodium) position + 2 else position
             val anime = ranking[index]
             holder.bind(anime, index + 1, anime.id in favoriteIds, onClick, onHeartClick)
         }

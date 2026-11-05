@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Paleta oscura: fondo casi negro, acento ámbar, dorado para puntuaciones y rojo solo para el corazón -->
     <color name="bg">#0E0E13</color>
     <color name="surface">#1A1A23</color>
     <color name="surface_high">#252532</color>

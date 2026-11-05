@@ -28,12 +28,10 @@ import com.google.android.material.card.MaterialCardView
 import com.example.animeapp.data.AnimeRepository
 import kotlinx.coroutines.launch
 
-// Pantalla principal: recomendación del día + Top 10 + carruseles por género
+// Pantalla Inicio
 class HomeFragment : Fragment(R.layout.fragment_home) {
-
     private val viewModel: HomeViewModel by viewModels()
 
-    // Adaptadores de los carruseles visibles (para actualizar sus corazones)
     private val carouselAdapters = mutableListOf<CarouselAdapter>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -46,7 +44,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         view.findViewById<View>(R.id.fakeSearch).setOnClickListener { selectTab(R.id.searchFragment) }
         error.findViewById<View>(R.id.buttonRetry).setOnClickListener { viewModel.load() }
 
-        // Se escucha el estado del ViewModel mientras la pantalla está visible
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
@@ -73,6 +70,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         viewModel.refreshIfFavoritesChanged()
     }
 
+    // Arma destacado y carruseles
     private fun render(root: View, data: HomeData) {
         renderHero(root, data)
 
@@ -100,7 +98,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             )
         }
 
-        // Si no hay carruseles por género, se explica cómo conseguirlos
         root.findViewById<View>(R.id.textFavoritesHint).isVisible = data.genreSections.isEmpty()
     }
 
@@ -124,6 +121,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         card.setOnClickListener { openAnimeDetail(anime) }
     }
 
+    // Agrega un carrusel
     private fun addSection(
         container: LinearLayout,
         title: String,
@@ -154,7 +152,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         container.addView(section)
     }
 
-    // Corazón de las tarjetas: guarda o quita sin abrir el detalle
+    // Corazón
     private fun toggleFavorite(anime: Anime) {
         viewLifecycleOwner.lifecycleScope.launch { AnimeRepository.toggleFavorite(anime) }
     }

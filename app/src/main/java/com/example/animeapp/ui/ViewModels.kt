@@ -16,14 +16,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-// Los ViewModel guardan el estado de cada pantalla.
-// Sobreviven a la rotación del celular y al cambio de pestaña,
-// así los datos no se vuelven a pedir a la API cada vez.
-
-// ---------- Inicio ----------
-
+// Inicio
 class HomeViewModel : ViewModel() {
-
     private val _state = MutableStateFlow<UiState<HomeData>>(UiState.Loading)
     val state: StateFlow<UiState<HomeData>> = _state
 
@@ -47,22 +41,19 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    // Si se agregaron o quitaron favoritos, se recalculan los carruseles por género
+    // Recarga si cambiaron los favoritos
     fun refreshIfFavoritesChanged() {
         if (AnimeRepository.favoritesVersion != loadedFavoritesVersion) load()
     }
 }
 
-// ---------- Top ratings (scroll infinito) ----------
-
 data class TopData(val ranking: List<Anime>, val hasMore: Boolean, val loadingMore: Boolean)
 
+// Top con scroll infinito
 class TopViewModel : ViewModel() {
-
     private val _state = MutableStateFlow<UiState<TopData>>(UiState.Loading)
     val state: StateFlow<UiState<TopData>> = _state
 
-    // Mensaje de un solo uso (por ejemplo, si falla cargar la página siguiente)
     private val _message = MutableStateFlow<String?>(null)
     val message: StateFlow<String?> = _message
 
@@ -114,16 +105,14 @@ class TopViewModel : ViewModel() {
     }
 
     companion object {
-        private const val MAX_PAGES = 8 // 8 páginas x 25 = top 200
+        private const val MAX_PAGES = 8
     }
 }
 
-// ---------- Buscar ----------
-
 data class SearchData(val summary: String, val results: List<Anime>, val emptyMessage: String)
 
+// Buscador
 class SearchViewModel : ViewModel() {
-
     private val _state = MutableStateFlow<UiState<SearchData>>(UiState.Loading)
     val state: StateFlow<UiState<SearchData>> = _state
 
@@ -153,8 +142,7 @@ class SearchViewModel : ViewModel() {
 
     fun retry() = run(debounce = false)
 
-    // Debounce: se espera a que el usuario deje de escribir antes de llamar a la API.
-    // Cancelar el Job también cancela la petición anterior.
+    // Debounce: espera que el usuario deje de escribir
     private fun run(debounce: Boolean) {
         job?.cancel()
         job = viewModelScope.launch {
@@ -175,19 +163,16 @@ class SearchViewModel : ViewModel() {
         val genreName = genre?.let { Translations.genre(it.name) }
 
         return when {
-            // Sin texto ni género: los más populares
             query.isEmpty() && genre == null -> SearchData(
                 "Populares en MyAnimeList",
                 Ranking.sort(AnimeRepository.getTopPage(1).data.orEmpty()),
                 "No hay animes para mostrar."
             )
-            // Solo género: los mejores de ese género
             query.isEmpty() -> SearchData(
                 "Mejores de $genreName",
                 AnimeRepository.getBestByGenre(genre!!.id, 25),
                 "No hay animes de $genreName."
             )
-            // Texto (y opcionalmente género)
             else -> {
                 val results = AnimeRepository.search(query)
                     .filter { genre == null || it.hasGenre(genre.id) }
@@ -202,17 +187,15 @@ class SearchViewModel : ViewModel() {
     }
 }
 
-// ---------- Favoritos ----------
-
 data class FavoritesData(
     val items: List<Anime>,
-    val genres: List<Genre>,   // géneros presentes en los favoritos (para los chips)
+    val genres: List<Genre>,
     val total: Int,
     val summary: String
 )
 
+// Favoritos
 class FavoritesViewModel : ViewModel() {
-
     private val _state = MutableStateFlow<UiState<FavoritesData>>(UiState.Loading)
     val state: StateFlow<UiState<FavoritesData>> = _state
 
@@ -234,13 +217,12 @@ class FavoritesViewModel : ViewModel() {
         refresh()
     }
 
+    // Género por SQL, texto con búsqueda difusa
     fun refresh() {
         viewModelScope.launch {
             val all = AnimeRepository.getFavorites()
-            // Si el género elegido ya no está en ningún favorito, se quita el filtro
             if (genreId != null && all.none { it.hasGenre(genreId!!) }) genreId = null
 
-            // Filtro por género con SQL (LIKE) y búsqueda difusa en Kotlin
             val byGenre = if (genreId != null) AnimeRepository.getFavorites(genreId) else all
             val items = if (query.isEmpty()) byGenre else FuzzySearch.filter(query, byGenre) { it.allTitles() }
 

@@ -21,9 +21,8 @@ import com.example.animeapp.data.Anime
 import com.example.animeapp.data.AnimeRepository
 import kotlinx.coroutines.launch
 
-// Top ratings: podio (oro, plata, bronce) + ranking completo con scroll infinito
+// Pantalla Top: podio y ranking
 class TopFragment : Fragment(R.layout.fragment_top) {
-
     private val viewModel: TopViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -40,7 +39,7 @@ class TopFragment : Fragment(R.layout.fragment_top) {
         recycler.layoutManager = layoutManager
         recycler.adapter = adapter
 
-        // Scroll infinito: cerca del final se pide la página siguiente
+        // Scroll infinito
         recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (dy <= 0) return
@@ -83,7 +82,7 @@ class TopFragment : Fragment(R.layout.fragment_top) {
         }
     }
 
-    // Corazón de las tarjetas: guarda o quita sin abrir el detalle
+    // Corazón
     private fun toggleFavorite(anime: Anime) {
         viewLifecycleOwner.lifecycleScope.launch { AnimeRepository.toggleFavorite(anime) }
     }

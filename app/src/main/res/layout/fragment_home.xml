@@ -15,7 +15,6 @@
             android:orientation="vertical"
             android:paddingBottom="24dp">
 
-            <!-- Encabezado: logo + buscador (lleva a la pestaña Buscar) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -25,7 +24,6 @@
                 android:paddingTop="12dp"
                 android:paddingBottom="8dp">
 
-                <!-- Logo: 図書館 = "toshokan", biblioteca en japonés -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -68,7 +66,6 @@
                     android:textSize="15sp" />
             </LinearLayout>
 
-            <!-- Recomendación de hoy -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardHero"
                 android:layout_width="match_parent"
@@ -173,7 +170,6 @@
                 </FrameLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Carruseles: Top 10 y (si hay favoritos) los 3 géneros preferidos -->
             <LinearLayout
                 android:id="@+id/containerSections"
                 android:layout_width="match_parent"

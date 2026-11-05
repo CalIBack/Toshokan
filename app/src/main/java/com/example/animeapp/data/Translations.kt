@@ -1,8 +1,7 @@
 package com.example.animeapp.data
 
-// La API devuelve todo en inglés: estos textos se muestran en español
+// Textos de la API al español
 object Translations {
-
     private val genres = mapOf(
         "Action" to "Acción", "Adventure" to "Aventura", "Comedy" to "Comedia",
         "Mystery" to "Misterio", "Drama" to "Drama", "Fantasy" to "Fantasía",
@@ -38,7 +37,6 @@ object Translations {
         else -> null
     }
 
-    // "TV · 2009 · 64 eps"
     fun metaLine(anime: Anime): String = listOfNotNull(
         type(anime.type),
         anime.year?.toString(),
@@ -50,7 +48,6 @@ object Translations {
 
     fun score(score: Double?): String = if (score != null) "★ %.2f".format(score) else "★ —"
 
-    // Géneros disponibles para filtrar en "Buscar" (ids de MyAnimeList)
     val browseGenres = listOf(
         Genre(1, "Action"), Genre(2, "Adventure"), Genre(4, "Comedy"), Genre(8, "Drama"),
         Genre(10, "Fantasy"), Genre(22, "Romance"), Genre(24, "Sci-Fi"), Genre(7, "Mystery"),

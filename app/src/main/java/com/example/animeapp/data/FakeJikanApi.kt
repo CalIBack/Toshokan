@@ -2,24 +2,19 @@ package com.example.animeapp.data
 
 import kotlinx.coroutines.delay
 
-// Datos de PRUEBA que imitan a la API de Jikan mientras el servidor no responde.
-// Implementa la misma interfaz JikanApi: el resto de la app no sabe
-// si los datos vienen de internet o de acá.
-// Los valores son aproximados y solo sirven para probar la app.
+// Datos de prueba (por si Jikan está caído)
 object FakeJikanApi : JikanApi {
-
     private const val PAGE_SIZE = 25
     private const val EPISODES_PAGE_SIZE = 100
 
     override suspend fun getTopAnime(page: Int): AnimeResponse {
-        delay(600) // simula la demora de la red
+        delay(600)
         val sorted = Ranking.sort(animes)
         return paginate(sorted, page, PAGE_SIZE)
     }
 
     override suspend fun searchAnime(query: String, limit: Int): AnimeResponse {
         delay(600)
-        // Igual que Jikan: busca el texto dentro del título (no es difusa)
         val results = animes.filter { anime ->
             anime.allTitles().any { it.contains(query, ignoreCase = true) }
         }
@@ -38,12 +33,10 @@ object FakeJikanApi : JikanApi {
         if (anime == null || anime.type == "Movie") {
             return EpisodesResponse(emptyList(), Pagination(hasNextPage = false))
         }
-        // Si sigue en emisión (episodes = null) se simulan 40 episodios emitidos
         val total = anime.episodes ?: 40
         val from = (page - 1) * EPISODES_PAGE_SIZE + 1
         val to = minOf(total, page * EPISODES_PAGE_SIZE)
         val list = if (from > to) emptyList() else (from..to).map { number ->
-            // Puntuación "pseudoaleatoria" pero siempre igual para el mismo episodio
             val score = 3.8 + ((animeId * 31 + number * 17) % 120) / 100.0
             Episode(
                 number = number,
@@ -72,8 +65,6 @@ object FakeJikanApi : JikanApi {
         return "%04d-%02d-%02dT00:00:00+00:00".format(y, month.coerceAtMost(12), day)
     }
 
-    // ---------- Catálogo de prueba ----------
-
     private val genreNames = mapOf(
         1 to "Action", 2 to "Adventure", 4 to "Comedy", 7 to "Mystery", 8 to "Drama",
         10 to "Fantasy", 14 to "Horror", 22 to "Romance", 24 to "Sci-Fi", 30 to "Sports",
@@ -100,7 +91,7 @@ object FakeJikanApi : JikanApi {
         season = season,
         duration = if (type == "Movie") "1 hr 50 min" else "24 min per ep",
         rating = "PG-13 - Teens 13 or older",
-        images = null, // sin URL: la app genera una portada con las iniciales
+        images = null,
         genres = genreIds.map { Genre(it, genreNames.getValue(it)) },
         studios = listOf(Studio(studio))
     )
@@ -108,7 +99,6 @@ object FakeJikanApi : JikanApi {
     private const val DONE = "Finished Airing"
     private const val AIRING = "Currently Airing"
 
-    // El ranking (#1, #2...) se calcula ordenando por puntuación
     private val animes = withRanks(listOf(
         anime(52991, "Sousou no Frieren", "Frieren: Beyond Journey's End", 9.3, 28, "TV", DONE, 2023, "fall", "Madhouse", listOf(2, 8, 10),
             "After the hero's party defeats the Demon King, the elf mage Frieren outlives her companions and sets out on a new journey to understand people."),

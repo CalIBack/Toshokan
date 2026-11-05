@@ -8,9 +8,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-// Tests unitarios: se corren con clic derecho sobre el archivo → Run 'FuzzySearchTest'
 class FuzzySearchTest {
-
     private val titles = listOf(
         "Naruto", "Naruto: Shippuuden", "Fullmetal Alchemist: Brotherhood",
         "Kimetsu no Yaiba", "Kimi no Na wa.", "Hunter x Hunter (2011)"

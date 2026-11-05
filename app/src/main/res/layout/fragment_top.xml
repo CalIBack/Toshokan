@@ -18,7 +18,6 @@
         android:layout_gravity="center"
         android:visibility="gone" />
 
-    <!-- Al cargar la página siguiente (scroll infinito) -->
     <ProgressBar
         android:id="@+id/progressTopMore"
         style="?android:attr/progressBarStyleSmall"

@@ -13,9 +13,8 @@ import androidx.navigation.ui.NavigationUI
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-// Contenedor de la app: Toolbar + NavHost (pantallas) + barra de navegación inferior
+// Toolbar + pantallas + barra inferior
 class MainActivity : AppCompatActivity() {
-
     private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
     private var bottomInset = 0
@@ -41,14 +40,12 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.navHostFragment) as NavHostFragment
         navController = navHostFragment.navController
 
-        // Las 4 pestañas son "principales": no muestran flecha de volver
         appBarConfiguration = AppBarConfiguration(
             setOf(R.id.homeFragment, R.id.searchFragment, R.id.topFragment, R.id.favoritesFragment)
         )
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration)
         NavigationUI.setupWithNavController(bottomNav, navController)
 
-        // Inicio tiene su propio encabezado; el detalle oculta la barra inferior
         navController.addOnDestinationChangedListener { _, destination, _ ->
             toolbar.isVisible = destination.id != R.id.homeFragment
             bottomNav.isVisible = destination.id != R.id.animeDetailFragment
@@ -56,9 +53,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Con la barra inferior visible no se agrega padding abajo: la BottomNavigationView
-    // ya se corre sola por encima de la barra de gestos (si se suman, queda el doble de alta).
-    // En el detalle (sin barra inferior) sí hace falta, para que el contenido no quede tapado.
+    // Margen inferior solo en el detalle (la barra ya se ajusta sola)
     private fun rootBottomPadding(
         destinationId: Int? = if (::navController.isInitialized) navController.currentDestination?.id else null
     ): Int = if (destinationId == R.id.animeDetailFragment) bottomInset else 0

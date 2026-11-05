@@ -66,10 +66,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 
-// Fragment "puente": Navigation sigue funcionando con Fragments,
-// pero toda esta pantalla está hecha en Jetpack Compose.
+// Detalle en Compose (Fragment con ComposeView)
 class AnimeDetailFragment : Fragment() {
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -99,7 +97,7 @@ class AnimeDetailFragment : Fragment() {
     }
 }
 
-// Mismos colores que el tema XML de la app
+// Colores de la app
 private object AppColors {
     val Background = Color(0xFF0E0E13)
     val Surface = Color(0xFF1A1A23)
@@ -124,8 +122,7 @@ private object AppColors {
     )
 }
 
-// ---------- Pantalla ----------
-
+// Pantalla de detalle
 @Composable
 fun AnimeDetailScreen(anime: Anime) {
     Column(
@@ -159,7 +156,7 @@ fun AnimeDetailScreen(anime: Anime) {
     }
 }
 
-// Portada grande con degradé y títulos encima
+// Portada + títulos
 @Composable
 private fun HeroHeader(anime: Anime) {
     Box(
@@ -167,7 +164,7 @@ private fun HeroHeader(anime: Anime) {
             .fillMaxWidth()
             .height(440.dp)
     ) {
-        // Picasso no tiene versión para Compose: se usa un ImageView clásico dentro de AndroidView
+        // Picasso dentro de Compose
         AndroidView(
             factory = { context ->
                 ImageView(context).apply { scaleType = ImageView.ScaleType.CENTER_CROP }
@@ -222,7 +219,7 @@ private fun HeroHeader(anime: Anime) {
     }
 }
 
-// Puntuación, ranking, popularidad y miembros
+// Puntaje, ranking, popularidad
 @Composable
 private fun StatsRow(anime: Anime) {
     val numbers = NumberFormat.getIntegerInstance()
@@ -255,11 +252,11 @@ private fun StatBox(label: String, value: String, valueColor: Color, modifier: M
     }
 }
 
-// Botón de favoritos (SQLite). El estado de Compose redibuja el botón al cambiar.
+// Botón de favoritos
 @Composable
 private fun FavoriteButton(anime: Anime) {
     val scope = rememberCoroutineScope()
-    var isFavorite by remember { mutableStateOf<Boolean?>(null) } // null = todavía no se sabe
+    var isFavorite by remember { mutableStateOf<Boolean?>(null) }
 
     LaunchedEffect(anime.id) {
         isFavorite = AnimeRepository.isFavorite(anime.id)
@@ -316,7 +313,7 @@ private fun GenresRow(anime: Anime) {
     }
 }
 
-// Datos técnicos en dos columnas
+// Datos técnicos
 @Composable
 private fun InfoGrid(anime: Anime) {
     val season = listOfNotNull(Translations.season(anime.season), anime.year?.toString())
@@ -354,7 +351,7 @@ private fun InfoGrid(anime: Anime) {
     }
 }
 
-// Sinopsis con "Ver más / Ver menos"
+// Sinopsis con ver más
 @Composable
 private fun Synopsis(text: String?) {
     var expanded by remember { mutableStateOf(false) }
@@ -378,8 +375,7 @@ private fun Synopsis(text: String?) {
     }
 }
 
-// ---------- Episodios (/anime/{id}/episodes) ----------
-
+// Episodios de a 100
 @Composable
 private fun EpisodesSection(anime: Anime) {
     val scope = rememberCoroutineScope()
@@ -448,6 +444,7 @@ private fun EpisodesSection(anime: Anime) {
     }
 }
 
+// Fila de episodio
 @Composable
 private fun EpisodeRow(episode: Episode) {
     Row(
@@ -498,7 +495,6 @@ private fun EpisodeRow(episode: Episode) {
     }
 }
 
-// "2009-04-05T00:00:00+00:00" -> "05/04/2009"
 private fun formatDate(iso: String?): String? {
     val parts = iso?.take(10)?.split("-") ?: return null
     return if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else null

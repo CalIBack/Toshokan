@@ -1,42 +1,27 @@
 # Toshokan 図書館
 
-*Toshokan* significa "biblioteca" en japonés.
+App de Android para explorar anime, hecha en Kotlin con la API de Jikan (MyAnimeList).
+Toshokan significa "biblioteca" en japonés.
 
-Aplicación Android en **Kotlin** para explorar series y películas de anime, consumiendo los endpoints públicos de MyAnimeList a través de **[Jikan API](https://jikan.moe/)**.
+## Qué tiene
 
-## Funcionalidades
+- Inicio con una recomendación del día y carruseles (top 10 y tus géneros favoritos)
+- Buscador que tolera errores (con "nrt" encontrás Naruto) y filtro por género
+- Top con podio y ranking completo
+- Detalle hecho en Jetpack Compose, con la lista de episodios y su puntaje
+- Favoritos guardados con SQLite, se pueden ver sin internet
 
-- **Inicio:** recomendación del día (cambia en cada apertura; si hay favoritos, sale de tus géneros preferidos), carrusel del Top 10 con ranking y puntuación, y hasta 3 carruseles con los mejores animes de los géneros que más aparecen en tus favoritos.
-- **Buscar:** búsqueda difusa ("nrt" encuentra "Naruto") combinada con la búsqueda de Jikan, más filtro por género.
-- **Top ratings:** podio con marcos dorado, plateado y bronce, y ranking completo con scroll infinito. Empates de puntuación ordenados alfabéticamente.
-- **Detalle (Jetpack Compose):** portada HD, títulos alternativos, puntuación, ranking, popularidad, información técnica, géneros, sinopsis expandible y **lista de episodios con su puntuación**.
-- **Favoritos (SQLite):** buscador propio y filtro por género; funciona sin internet.
-- Barra de navegación inferior, estados de carga, pantallas de error con "Reintentar" y control del límite de peticiones de Jikan.
+## Cómo correrla
 
-## Arquitectura
+1. Abrir el proyecto en Android Studio
+2. Sincronizar Gradle
+3. Ejecutar en un celular o emulador (Android 7 o más)
 
-```
-Fragment (XML) / Compose  →  ViewModel (StateFlow)  →  AnimeRepository  →  Jikan (Retrofit) / FakeJikanApi / SQLite
-```
+Ahora mismo usa datos de prueba porque Jikan estaba caído. Para usar la API real, en `data/RetrofitClient.kt` cambiar `USE_FAKE_DATA` a `false`.
 
-## Endpoints utilizados (todos de Jikan)
+## Endpoints
 
-- `GET /v4/top/anime?page={n}` — ranking
-- `GET /v4/anime?q={query}` — búsqueda por nombre
-- `GET /v4/anime?genres={id}&order_by=score&sort=desc` — mejores de un género
-- `GET /v4/anime/{id}/episodes?page={n}` — episodios con puntuación
-
-## Datos de prueba
-
-Si la API de Jikan no está disponible, la app funciona con datos locales de prueba.
-En `data/RetrofitClient.kt`:
-
-```kotlin
-private const val USE_FAKE_DATA = false // true = datos de prueba, false = API real
-```
-
-## Cómo ejecutar
-
-1. Abrir el proyecto en **Android Studio** y sincronizar Gradle.
-2. Ejecutar en un dispositivo con Android 7.0 (API 24) o superior.
-3. Tests unitarios: clic derecho en `app/src/test/.../FuzzySearchTest.kt` → Run.
+- `top/anime`
+- `anime?q=`
+- `anime?genres=`
+- `anime/{id}/episodes`

@@ -12,10 +12,8 @@ import android.graphics.drawable.Drawable
 import android.widget.ImageView
 import com.squareup.picasso.Picasso
 
-// Carga portadas con Picasso. Si no hay imagen (o falla), muestra una portada
-// generada con un degradé de color y las iniciales del título.
+// Portadas con Picasso; si no hay, genera una con iniciales
 object CoverLoader {
-
     private val palette = listOf(
         0xFF6A11CB to 0xFF2575FC,
         0xFFFF4F81 to 0xFF7B2FF7,

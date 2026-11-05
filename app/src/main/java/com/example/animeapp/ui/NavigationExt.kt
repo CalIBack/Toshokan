@@ -8,13 +8,13 @@ import com.example.animeapp.R
 import com.example.animeapp.data.Anime
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-// Abre el detalle desde cualquier pestaña, mandando el anime completo
+// Abre el detalle
 fun Fragment.openAnimeDetail(anime: Anime) {
     val bundle = Bundle().apply { putSerializable(AnimeDetailFragment.ARG_ANIME, anime) }
     findNavController().navigate(R.id.action_global_animeDetail, bundle)
 }
 
-// Cambia de pestaña como si el usuario tocara la barra inferior
+// Cambia de pestaña
 fun Fragment.selectTab(tabId: Int) {
     requireActivity().findViewById<BottomNavigationView>(R.id.bottomNav).selectedItemId = tabId
 }

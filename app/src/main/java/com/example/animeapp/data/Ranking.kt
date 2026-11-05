@@ -1,7 +1,6 @@
 package com.example.animeapp.data
 
-// Orden de los rankings: mayor puntuación primero; si hay empate, por orden alfabético.
-// Los animes sin puntuación van al final.
+// Ranking: mayor puntaje primero, empate alfabético
 object Ranking {
     fun sort(animes: List<Anime>): List<Anime> =
         animes.distinctBy { it.id }
